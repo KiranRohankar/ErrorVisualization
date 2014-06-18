@@ -15,7 +15,29 @@ $(function() {
     $('div.progress').show();
     var formData = new FormData();
     var file = document.getElementById('myFile').files[0];
-    formData.append('myFile', file);
+  var reader = new FileReader();
+        reader.onload = function(e) {
+        var  contents = reader.result;
+         var arr  = contents.split("\n");
+         if(arr[0].indexOf("dv-docs") > -1)
+         {
+          console.log("its a dv docs file")
+         }
+         else if(arr[0].indexOf("individual") > -1)
+         {
+          console.log("its a individual file");
+         }
+         else
+         {
+          console.log("its apache file");
+         }
+        }
+
+        reader.readAsText(file);    
+
+    
+       formData.append('myFile', file);
+    
     
     var xhr = new XMLHttpRequest();
     
@@ -33,6 +55,7 @@ $(function() {
     };
     
     xhr.onload = function() {
+
       showInfo(this.statusText);
     };
     
