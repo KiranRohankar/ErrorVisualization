@@ -4,18 +4,23 @@ var express = require('express')
 
 var app = express();
 
-//database connectivity
+/*
+database connectivity starts with mongo with monk plugin
+
+*/
 var mongo = require('mongodb');
 var monk = require('monk');
 var db = monk('localhost:27017/vivo');
 
+/*
+databse connectivity ends
+*/
 
-//databse connectivity ends
-
+app.engine('html', require('ejs').renderFile);
 app.configure(function(){
   app.set('port', process.env.PORT || 3000);
   app.set('views', __dirname + '/views');
-  app.set('view engine', 'jade');
+  app.set('view engine', 'ejs');
   app.use(express.favicon());
   app.use(express.logger('dev'));
   app.use(express.bodyParser({ 
@@ -32,28 +37,53 @@ app.configure('development', function(){
   app.use(express.errorHandler());
 });
 
+
+
 // Routes
 
 app.get('/', function(req, res) {
-  res.render('index');
+  res.render('index.html');
 });
 
-app.post('/', function(req, res) {
+/*
+For readig dvdocs file
+*/
+app.post('/dvdocs', function(req, res) {
 	//console.log(req.files.myFile.path);
- 	readFile(req.files.myFile.path);
+ 	readDvdocsFile(req.files.myFile.path);
   deleteAfterUpload(req.files.myFile.path);
   res.end();
 });
 
-//for reading apache file
+/*
+for reading apache file
+*/
 app.post('/apache',function(req,res){
 
- console.log( req.files.myFile.path); 
-readApacheFile(req.files.myFile.path);
-deleteAfterUpload(req.file.myFile.path);
+var filePath=req.files.myFile.path;
+  
+readApacheFile(filePath);
+
+deleteAfterUpload(filePath);
 res.end();
 
 });
+
+/*
+for reading individual file
+*/
+app.post('/individual',function(req,res){
+
+var filePath=req.files.myFile.path;
+  
+readApacheFile(filePath);
+
+deleteAfterUpload(filePath);
+res.end();
+
+
+});
+
 
 // Start the app
 
@@ -65,7 +95,12 @@ http.createServer(app).listen(app.get('port'), function(){
 
 var fs = require('fs');
 
-var readFile = function(path)
+
+
+/*
+Function for reading dvdocs file
+*/
+var readDvdocsFile = function(path)
 {
 	var content;
 // First I want to read the file
@@ -100,7 +135,7 @@ fs.readFile(path, function read(err, data) {
          console.log(myJsonString);
          var jsonData= JSON.parse(myJsonString);
          //Insert into databse
-          var mycollection = db.get('usercollection');
+          var mycollection = db.get('dvdocs');
           var promise = mycollection.insert(jsonData);
           promise.type; // 'insert' in this case
           promise.error(function(err){});
@@ -114,7 +149,14 @@ fs.readFile(path, function read(err, data) {
               // Or put the next step in a function and invoke it
 });
 
-}
+}/*End of dvdocs file read*/
+
+
+
+
+
+
+
 
 //Read apache error log file
 var readApacheFile = function(path)
@@ -179,11 +221,73 @@ fs.readFile(path, function read(err, data) {
 }/*End of apache file read*/
 
 
+
+/*
+Function for reading individual file
+*/
+var readIndividualFile = function(path)
+{
+  var content;
+// First I want to read the file
+fs.readFile(path, function read(err, data) {
+    if (err) {
+        throw err;
+    }
+    content = data;
+    var stringdata= data.toString();
+    var arr = stringdata.split('\n');
+
+    var x = new Array(arr.length-1);
+            
+    for(var i=0;i<arr.length-1;i++)
+          {
+            var myString = arr[i];
+            var myRegexp1 = /([\w+-?]*)/g;
+            var match1 = myRegexp1.exec(myString);
+            var myRegexp2 = /\[(\d{2}\/\w+\/\d{4})/g;
+            var match2 = myRegexp2.exec(myString);
+          
+            if(!(match1[1]===null) || !(match2[1]===null))
+            {
+              var temp= {};
+              temp['machine']=match1[1];
+              temp['date']=match2[1];
+              x[i]=temp;
+              
+             }
+          }
+          var myJsonString = JSON.stringify(x);
+         console.log(myJsonString);
+         var jsonData= JSON.parse(myJsonString);
+         //Insert into databse
+          var mycollection = db.get('individual');
+          var promise = mycollection.insert(jsonData);
+          promise.type; // 'insert' in this case
+          promise.error(function(err){});
+          promise.on('error', function(err){
+
+            throw err;
+          });
+
+    // Invoke the next step here however you like
+   // console.log(content);   // Put all of the code here (not the best solution)
+              // Or put the next step in a function and invoke it
+});
+
+}
+
+
+/*
+End of individual file read
+*/
+
+
 var deleteAfterUpload = function(path) {
-  setTimeout( function(){
+  /*setTimeout( function(){
     fs.unlink(path, function(err) {
       if (err) console.log(err);
       console.log('file successfully deleted');
     });
-  }, 60 * 1000);
+  }, 60 * 1000);*/
+console.log(path);
 };

@@ -7,6 +7,10 @@ $(function() {
   };
   
   $('input[type="submit"]').on('click', function(evt) {
+
+   $('#visualize').removeAttr('disabled');
+     $('#uploadFile').attr('disabled','true');
+   
     evt.preventDefault();
     $('div.progress').show();
     var formData = new FormData();
@@ -33,7 +37,8 @@ $(function() {
     };
     
     xhr.send(formData);
-    
+   
+
   });
   
 });
