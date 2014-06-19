@@ -73,10 +73,9 @@ res.end();
 for reading individual file
 */
 app.post('/individual',function(req,res){
-
 var filePath=req.files.myFile.path;
   
-readApacheFile(filePath);
+readIndividualFile(filePath);
 
 deleteAfterUpload(filePath);
 res.end();
@@ -233,6 +232,8 @@ fs.readFile(path, function read(err, data) {
     if (err) {
         throw err;
     }
+
+    console.log("I am in read Individual file");
     content = data;
     var stringdata= data.toString();
     var arr = stringdata.split('\n');
@@ -260,7 +261,7 @@ fs.readFile(path, function read(err, data) {
          console.log(myJsonString);
          var jsonData= JSON.parse(myJsonString);
          //Insert into databse
-        /*  var mycollection = db.get('individual');
+       var mycollection = db.get('individual');
           var promise = mycollection.insert(jsonData);
           promise.type; // 'insert' in this case
           promise.error(function(err){});
@@ -268,7 +269,7 @@ fs.readFile(path, function read(err, data) {
 
             throw err;
           });
-        */
+      
     // Invoke the next step here however you like
    // console.log(content);   // Put all of the code here (not the best solution)
               // Or put the next step in a function and invoke it
