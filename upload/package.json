@@ -10,6 +10,7 @@
     "express": "~3.1.0",
     "jade": "*",
     "mongodb": "*",
+    "mongoose": "^3.8.12",
     "monk": "*"
   },
   "author": {

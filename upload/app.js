@@ -9,8 +9,28 @@ database connectivity starts with mongo with monk plugin
 
 */
 var mongo = require('mongodb');
-var monk = require('monk');
-var db = monk('localhost:27017/vivo');
+//var monk = require('monk');
+//var db = monk('localhost:27017/vivo');
+var mongoose = require('mongoose');
+
+var db = mongoose.connection;
+db.on('error', console.error);
+db.once('open', function() {
+
+});
+var dvSchema = require('./models/dvSchema');
+var indiSchema = require('./models/indiSchema');
+var apacheSchema = require('./models/apacheSchema');
+
+var ddlg = new dvSchema({
+  machine: "kiransgarage.com",
+  date: "10/June/14"
+});
+
+
+//create database connection
+mongoose.connect('mongodb://localhost:27017/vivo');
+
 
 /*
 databse connectivity ends
@@ -44,7 +64,15 @@ app.configure('development', function(){
 app.get('/', function(req, res) {
   res.render('index.html');
 });
+app.get('/create',function(req,res){
+ddlg.save(function(err, thor) {
+  if (err) return console.error(err);
+  
+});
+res.send("ok");
 
+
+});
 /*
 For readig dvdocs file
 */
@@ -80,6 +108,42 @@ readIndividualFile(filePath);
 deleteAfterUpload(filePath);
 res.end();
 
+
+});
+
+
+app.get('/getUnique',function(req,res){
+
+  apacheSchema.collection.distinct("ip",function(error,result){
+
+    if(error)
+    {
+        console.log(error);
+
+    }
+    else
+    {
+      for (var i = 0; i < result.length; i++) {
+      var myip=result[i]; 
+      console.log(myip);
+     apacheSchema.collection.count({ ip: myip }, function (err, count) {
+  if (err){
+    console.log(err);
+  }
+  console.log(result[i]+"  "+ count);
+  
+});
+
+  
+      }
+      
+     
+      
+    }
+
+  });
+
+  res.end();
 
 });
 
@@ -123,18 +187,26 @@ fs.readFile(path, function read(err, data) {
           
             if(!(match1[1]===null) || !(match2[1]===null))
             {
-              var temp= {};
-              temp['machine']=match1[1];
-              temp['date']=match2[1];
-              x[i]=temp;
+             // var temp= {};
+             // temp['machine']=match1[1];
+              //temp['date']=match2[1];
+
+              var ddlg = new dvSchema({
+                machine: match1[1],
+                date: match2[1]
+                });
+
+              ddlg.save(function(err, thor) {
+            if (err) return console.error(err);
+              });
               
              }
           }
-          var myJsonString = JSON.stringify(x);
-         console.log(myJsonString);
-         var jsonData= JSON.parse(myJsonString);
+          //var myJsonString = JSON.stringify(x);
+         //console.log(myJsonString);
+         //var jsonData= JSON.parse(myJsonString);
          //Insert into databse
-          var mycollection = db.get('dvdocs');
+        /*  var mycollection = db.get('dvdocs');
           var promise = mycollection.insert(jsonData);
           promise.type; // 'insert' in this case
           promise.error(function(err){});
@@ -142,7 +214,7 @@ fs.readFile(path, function read(err, data) {
 
             throw err;
           });
-
+      */
     // Invoke the next step here however you like
    // console.log(content);   // Put all of the code here (not the best solution)
               // Or put the next step in a function and invoke it
@@ -172,7 +244,7 @@ fs.readFile(path, function read(err, data) {
     var arr = stringdata.split('\n');
     
     var x = new Array(arr.length-1);
-       var mycollection = db.get('apache');       
+              
     for(var i=0;i<arr.length-1;i++)
           {
             var myString = arr[i];
@@ -192,7 +264,7 @@ fs.readFile(path, function read(err, data) {
           
             if(!(match1[1]===null) || !(match2[1]===null))
             {
-              var temp= {};
+         /*     var temp= {};
               temp['date']=match1[1]+"/"+match1[2]+"/"+match1[3];
               temp['ip']=match2[1];
               temp['message']=match3[1];
@@ -209,6 +281,17 @@ fs.readFile(path, function read(err, data) {
 
             throw err;
           });
+        */
+        var ddlg = new apacheSchema({
+                date: match1[1],
+                ip: match2[1],
+                message: match3[1]
+                });
+
+              ddlg.save(function(err, thor) {
+            if (err) return console.error(err);
+              });
+
           
              }
           }
@@ -233,7 +316,6 @@ fs.readFile(path, function read(err, data) {
         throw err;
     }
 
-    console.log("I am in read Individual file");
     content = data;
     var stringdata= data.toString();
     var arr = stringdata.split('\n');
@@ -250,14 +332,19 @@ fs.readFile(path, function read(err, data) {
           
             if(!(match1[1]===null) || !(match2[1]===null))
             {
-              var temp= {};
-              temp['machine']=match1[1];
-              temp['date']=match2[1];
-              x[i]=temp;
               
+
+              var ddlg = new indiSchema({
+                machine: match1[1],
+                date: match2[1]
+                });
+
+              ddlg.save(function(err, thor) {
+            if (err) return console.error(err);
+              });
              }
           }
-          var myJsonString = JSON.stringify(x);
+       /*   var myJsonString = JSON.stringify(x);
          console.log(myJsonString);
          var jsonData= JSON.parse(myJsonString);
          //Insert into databse
@@ -269,7 +356,7 @@ fs.readFile(path, function read(err, data) {
 
             throw err;
           });
-      
+      */
     // Invoke the next step here however you like
    // console.log(content);   // Put all of the code here (not the best solution)
               // Or put the next step in a function and invoke it
@@ -284,11 +371,11 @@ End of individual file read
 
 
 var deleteAfterUpload = function(path) {
-  /*setTimeout( function(){
+  setTimeout( function(){
     fs.unlink(path, function(err) {
       if (err) console.log(err);
       console.log('file successfully deleted');
     });
-  }, 60 * 1000);*/
-console.log(path);
+  }, 60 * 1000);
+
 };
