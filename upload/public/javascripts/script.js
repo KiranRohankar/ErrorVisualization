@@ -1,5 +1,3 @@
-var myElement =document.getElementById('myFile');
-console.log(document.getElementById('myFile'));
 
 $(function() {
   
@@ -8,7 +6,12 @@ $(function() {
     $('strong.message').text(message);
     $('div.alert').show();
   };
-  
+ 
+    $('#importFile').bind('click',function() {
+        $('#uploadFile').attr('disabled',false);
+    });
+
+
   $('input[type="submit"]').on('click', function(evt) {
 
    $('#visualize').removeAttr('disabled');
