@@ -1,3 +1,6 @@
+var myElement =document.getElementById('myFile');
+console.log(document.getElementById('myFile'));
+
 $(function() {
   
   var showInfo = function(message) {
@@ -15,33 +18,42 @@ $(function() {
     $('div.progress').show();
     var formData = new FormData();
     var file = document.getElementById('myFile').files[0];
+    formData.append('myFile', file);
+    var xhr = new XMLHttpRequest();
+
   var reader = new FileReader();
         reader.onload = function(e) {
         var  contents = reader.result;
          var arr  = contents.split("\n");
          if(arr[0].indexOf("dv-docs") > -1)
          {
-          console.log("its a dv docs file")
+          console.log("its a dv docs file");
+          xhr.open('post', '/dvdocs', true);
+          xhr.send(formData);
          }
          else if(arr[0].indexOf("individual") > -1)
          {
           console.log("its a individual file");
+          xhr.open('post', '/individual', true);
+          xhr.send(formData);
+
          }
          else
          {
           console.log("its apache file");
-         }
+          xhr.open('post', '/apache', true);
+          xhr.send(formData);
+          }
         }
 
         reader.readAsText(file);    
 
     
-       formData.append('myFile', file);
+       
     
     
-    var xhr = new XMLHttpRequest();
     
-    xhr.open('post', '/apache', true);
+    
     
     xhr.upload.onprogress = function(e) {
       if (e.lengthComputable) {
@@ -59,9 +71,17 @@ $(function() {
       showInfo(this.statusText);
     };
     
-    xhr.send(formData);
+   
    
 
   });
-  
+   
 });
+
+
+/*myElement.addEventListener('change',function(){
+var myButton = document.getElementById('uploadFile');
+  myButton.disabled=false;
+
+},false);
+*/
